@@ -1,0 +1,38 @@
+  BitmapDescriptor sourceIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor currentLocationIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor destinationIcon = BitmapDescriptor.defaultMarker;
+ 
+
+
+      // location.onLocationChanged.listen((newLoc) {
+    //   currentLocation = newLoc;
+
+    //   googleMapController.animateCamera(CameraUpdate.newCameraPosition(
+    //       CameraPosition(target: LatLng(newLoc.latitude!, newLoc.longitude!))));
+
+    //   setState(() {});
+    // }
+
+    // );
+
+    void getCurrentLocation() async {
+    // GoogleMapController googleMapController = await _controller.future;
+
+    Location location = Location();
+
+    location.getLocation().then((locationData) {
+      currentLocation = locationData;
+      // You can use the currentLocation variable now, it will have the location data
+    });
+
+    // location.onLocationChanged.listen((newLoc) {
+    //   currentLocation = newLoc;
+
+    //   googleMapController.animateCamera(CameraUpdate.newCameraPosition(
+    //       CameraPosition(target: LatLng(newLoc.latitude!, newLoc.longitude!))));
+
+    //   setState(() {});
+    // }
+
+    // );
+  }
