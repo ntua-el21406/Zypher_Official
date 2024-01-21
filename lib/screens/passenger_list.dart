@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_zypher/db.dart';
 import './detail_page.dart';
+import '../components/user_role.dart';
+
 class PassengersListPage extends StatefulWidget {
   final LatLng address;
   final double rangeInKm;
+  final DatabaseHelper dbHelper;
+  final int id;
+  final UserRole userRole;
 
   PassengersListPage({
     Key? key,
     required this.address,
     required this.rangeInKm,
+    required this.dbHelper,
+    required this.id,
+    required this.userRole,
   }) : super(key: key);
 
   @override
@@ -32,6 +40,7 @@ class _PassengersListPageState extends State<PassengersListPage> {
     var queryResults = await dbService.getCloseUsersWithLocations(
       widget.address,
       widget.rangeInKm,
+      widget.id,
     );
 
     // Update the state
@@ -43,36 +52,42 @@ class _PassengersListPageState extends State<PassengersListPage> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Passengers List'),
-    ),
-    body: ListView.builder(
-      itemCount: users_and_locations.length,
-      itemBuilder: (context, index) {
-        return Card(
-          elevation: 4.0,
-          margin: EdgeInsets.all(8.0),
-          child: ListTile(
-            title: Text(users_and_locations[index]['username'] ?? 'Unknown User'),
-            subtitle: Text('User ID: ${users_and_locations[index]['userid']}'),
-            trailing: ElevatedButton(
-              child: Text('View Details'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailPage(user_location: users_and_locations[index]), // Replace with your DetailPage
-                  ),
-                );
-              },
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Passengers List'),
+      ),
+      body: ListView.builder(
+        itemCount: users_and_locations.length,
+        itemBuilder: (context, index) {
+          return Card(
+            elevation: 4.0,
+            margin: EdgeInsets.all(8.0),
+            child: ListTile(
+              title: Text(
+                  users_and_locations[index]['username'] ?? 'Unknown User'),
+              subtitle: Text(
+                  '${users_and_locations[index]['firstName']} ${users_and_locations[index]['lastName']}'),
+              trailing: ElevatedButton(
+                child: Text('View Details'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailPage(
+                        user_location: users_and_locations[index],
+                        id: widget.id,
+                        dbHelper: widget.dbHelper,
+                        userRole: widget.userRole,
+                      ), // Replace with your DetailPage
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
-    ),
-  );
-}
-
+          );
+        },
+      ),
+    );
+  }
 }

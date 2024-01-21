@@ -1,12 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-// import 'package:my_zypher/screens/searching_page.dart';
 import '../core/constants/constants.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geodesy/geodesy.dart' as geo;
-import './entry_screen.dart';
 import './main_screen.dart';
 import 'package:my_zypher/db.dart';
 import '../components/user_role.dart';
@@ -52,20 +52,20 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
   //
   void setCustomMarkerIcon() {
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration.empty, "assets/Pin_source.png")
+            ImageConfiguration.empty, 'assets/Pin_source.png')
         .then((icon) {
       sourceIcon = icon;
     });
 
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Pin_destination.png" // Assuming this is for a different marker
+            'assets/Pin_destination.png' // Assuming this is for a different marker
             )
         .then((icon) {
       destinationIcon = icon;
     });
 
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Badge.png" // Assuming this is for a different marker
+            'assets/Badge.png' // Assuming this is for a different marker
             )
         .then((icon) {
       currentLocationIcon = icon;
@@ -86,7 +86,7 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
             LatLng(locationData.latitude!, locationData.longitude!);
       });
     } catch (e) {
-      print("Failed to get current location: $e");
+      print('Failed to get current location: $e');
       // Handle exception (e.g., location services disabled)
     }
   }
@@ -102,7 +102,7 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
         });
       }
     } catch (e) {
-      print("Failed to get location: $e");
+      print('Failed to get location: $e');
       // Handle exception or show an error message
     }
   }
@@ -119,11 +119,11 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
       // travelMode: TravelMode.driving,
     );
     if (result.points.isNotEmpty) {
-      result.points.forEach(
-        (PointLatLng point) => polylineCoordinates.add(
+      for (var point in result.points) {
+        polylineCoordinates.add(
           LatLng(point.latitude, point.longitude),
-        ),
-      );
+        );
+      }
       setState(() {});
     }
   }
@@ -185,8 +185,8 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Stack(children: <Widget>[
-      location_start == null
-          ? Center(child: CircularProgressIndicator())
+      location_end == null
+          ? const Center(child: CircularProgressIndicator())
           : GoogleMap(
               onMapCreated: (controller) => mapController = controller,
               initialCameraPosition: CameraPosition(
@@ -195,29 +195,29 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
               ),
               polylines: {
                 Polyline(
-                  polylineId: PolylineId("route"),
+                  polylineId: const PolylineId('route'),
                   points: polylineCoordinates,
-                  color: Color(0xfff50000),
+                  color: const Color(0xfff50000),
                   width: 6,
                 ),
               },
               markers: {
                 Marker(
-                  markerId: MarkerId('location'),
+                  markerId: const MarkerId('location'),
                   icon: destinationIcon,
                   position: location_start!,
                 ),
                 Marker(
-                  markerId: MarkerId('location'),
+                  markerId: const MarkerId('location'),
                   icon: sourceIcon,
                   position: location_end!,
                 ),
                 Marker(
-                  markerId: MarkerId("Current Location"),
+                  markerId: const MarkerId('Current Location'),
                   icon: currentLocationIcon,
                   position: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
-                  infoWindow: InfoWindow(title: 'Source'),
+                      currentLocation!.latitude, currentLocation!.longitude),
+                  infoWindow: const InfoWindow(title: 'Source'),
                 ),
               },
             ),
@@ -228,24 +228,29 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
         child: Card(
           color: Colors.white,
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Your trip is ${(totalDistance~/1000).toStringAsFixed(0)} km.',
-                  style: TextStyle(
+                  'Your trip is ${(totalDistance / 1000).toStringAsFixed(1)} km.',
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 16),
+                Text(
+                  'You will earn ${(totalDistance / 100).toStringAsFixed(0)} points.',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () async {
                     var dbHelper = DatabaseHelper();
 
                     await dbHelper.updateDriverPoints(
-                        widget.id, (totalDistance~/100).toInt());
+                        widget.id, totalDistance ~/ 100);
 
                     Navigator.push(
                       context,
@@ -258,7 +263,7 @@ class _CarpoolPage2 extends State<CarpoolPage2> {
                     );
                   },
                   style: ElevatedButton.styleFrom(primary: Colors.grey),
-                  child: Text('Ride finished'),
+                  child: const Text('Ride finished'),
                 ),
               ],
             ),

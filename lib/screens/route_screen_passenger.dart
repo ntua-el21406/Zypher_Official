@@ -73,7 +73,6 @@ class _RoutePage extends State<RoutePage> {
   }
 
 ////////////TELOS EIKONIDION////////////////////
-//////////////////////////////////////////////////////////////////
 
   LatLng? currentLocation;
 
@@ -142,7 +141,6 @@ class _RoutePage extends State<RoutePage> {
         geo.LatLng(end.latitude, end.longitude),
       );
     }
-
     return totalDistance / 1000; // Convert meters to kilometers
   }
 
@@ -168,144 +166,149 @@ class _RoutePage extends State<RoutePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(children: <Widget>[
-      location == null
-          ? Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              onMapCreated: (controller) => mapController = controller,
-              initialCameraPosition: CameraPosition(
-                target: location!,
-                zoom: 15,
-              ),
-              polylines: {
-                Polyline(
-                  polylineId: PolylineId("route"),
-                  points: polylineCoordinates,
-                  color: Color(0xfff50000),
-                  width: 6,
-                ),
-              },
-              markers: {
-                Marker(
-                  markerId: MarkerId('location'),
-                  icon: destinationIcon,
-                  position: location_start!,
-                ),
-                Marker(
-                  markerId: MarkerId('location'),
-                  icon: sourceIcon,
-                  position: location_end!,
-                ),
-                Marker(
-                  markerId: MarkerId("Current Location"),
-                  icon: currentLocationIcon,
-                  position: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
-                  infoWindow: InfoWindow(title: 'Source'),
-                ),
-              },
-            ),
-      Positioned(
-        bottom: 20, // Distance from the bottom of the screen
-        left: 20, // Distance from the left edge of the screen
-        right: 20, // Distance from the right edge of the screen
-        child: Card(
-          color: Colors.white,
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Your trip is ${(totalDistance ~/ 1000).toStringAsFixed(1)} km.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+      body: Stack(
+        children: <Widget>[
+          location == null
+              ? Center(child: CircularProgressIndicator())
+              : GoogleMap(
+                  onMapCreated: (controller) => mapController = controller,
+                  initialCameraPosition: CameraPosition(
+                    target: location!,
+                    zoom: 15,
                   ),
-                ),
-                SizedBox(height: 8),
-                FutureBuilder<int>(
-                  future: widget.dbHelper.getUserPoints(widget.id),
-                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // Show a loading indicator while waiting
-                    } else if (snapshot.hasError) {
-                      return Text(
-                          'Error: ${snapshot.error}'); // Handle the error case
-                    } else {
-                      // Once the data is available, use it to build the UI
-                      return Text(
-                        'You have ${snapshot.data} points in your account.',
-                        style: TextStyle(fontSize: 16),
-                      );
-                    }
+                  polylines: {
+                    Polyline(
+                      polylineId: PolylineId("route"),
+                      points: polylineCoordinates,
+                      color: Color(0xfff50000),
+                      width: 6,
+                    ),
+                  },
+                  markers: {
+                    Marker(
+                      markerId: MarkerId('location'),
+                      icon: destinationIcon,
+                      position: location_start!,
+                    ),
+                    Marker(
+                      markerId: MarkerId('location'),
+                      icon: sourceIcon,
+                      position: location_end!,
+                    ),
+                    Marker(
+                      markerId: MarkerId("Current Location"),
+                      icon: currentLocationIcon,
+                      position: LatLng(currentLocation!.latitude,
+                          currentLocation!.longitude),
+                      infoWindow: InfoWindow(title: 'Source'),
+                    ),
                   },
                 ),
-                SizedBox(height: 16),
-                Text(
-                  'Will you spend ${(totalDistance ~/ 100).toStringAsFixed(0)} points to travel?',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Positioned(
+            bottom: 20, // Distance from the bottom of the screen
+            left: 20, // Distance from the left edge of the screen
+            right: 20, // Distance from the right edge of the screen
+            child: Card(
+              color: Colors.white,
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        var dbHelper = DatabaseHelper();
-                        int locid = await dbHelper.insertLocation(
-                            widget.id,
-                          '${location_start!.latitude}',
-                          '${location_start!.longitude}',
-                          '${location_end!.latitude}',
-                          '${location_end!.longitude}',
-                          '0',
-                        );
-
-                        print("Inserted location with ID: $locid");
-
-                        await dbHelper.updatePassengerPoints(
-                            widget.id, (totalDistance ~/ 100).toInt());
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SearchingPage(
-                              id: widget.id,
-                              dbHelper: widget.dbHelper,
-                              address_start: widget.address_start,
-                              address_end: widget.address_end,
-                              userRole: widget.userRole,
-                              locationid: locid,
-                            ),
-                          ), // Navigates to SearchingPage
-                        );
-                      },
-                      child: Text('Search'),
+                    Text(
+                      'Your trip is ${(totalDistance / 1000).toStringAsFixed(1)} km.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MainScreen(
-                                    id: widget.id,
-                                    dbHelper: widget.dbHelper,
-                                    userRole: widget.userRole,
-                                  )), // Navigates to SearchingPage
-                        );
+                    SizedBox(height: 8),
+                    FutureBuilder<int>(
+                      future: widget.dbHelper.getUserPoints(widget.id),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<int> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator(); // Show a loading indicator while waiting
+                        } else if (snapshot.hasError) {
+                          return Text(
+                              'Error: ${snapshot.error}'); // Handle the error case
+                        } else {
+                          // Once the data is available, use it to build the UI
+                          return Text(
+                            'You have ${snapshot.data} points in your account.',
+                            style: TextStyle(fontSize: 16),
+                          );
+                        }
                       },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey),
-                      child: Text('Cancel'),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Will you spend ${(totalDistance / 100).toStringAsFixed(0)} points to travel?',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            var dbHelper = DatabaseHelper();
+                            int locid = await dbHelper.insertLocation(
+                              widget.id,
+                              '${location_start!.latitude}',
+                              '${location_start!.longitude}',
+                              '${location_end!.latitude}',
+                              '${location_end!.longitude}',
+                              '0',
+                            );
+
+                            print("Inserted location with ID: $locid");
+
+                            await dbHelper.updatePassengerPoints(
+                                widget.id, (totalDistance ~/ 100).toInt());
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SearchingPage(
+                                  id: widget.id,
+                                  dbHelper: widget.dbHelper,
+                                  address_start: widget.address_start,
+                                  address_end: widget.address_end,
+                                  userRole: widget.userRole,
+                                  locationid: locid,
+                                ),
+                              ), // Navigates to SearchingPage
+                            );
+                          },
+                          child: Text('Search'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MainScreen(
+                                        id: widget.id,
+                                        dbHelper: widget.dbHelper,
+                                        userRole: widget.userRole,
+                                      )), // Navigates to SearchingPage
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey),
+                          child: Text('Cancel'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
-    ]));
+    );
   }
 }

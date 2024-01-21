@@ -69,8 +69,6 @@ class _SearchLocationScreenState extends State<SearchLocationScreen> {
       currentLocation = locationData;
 
       // Convert the LocationData to a LatLng object
-      LatLng currentLatLng =
-          LatLng(currentLocation!.latitude!, currentLocation!.longitude!);
 
       // You can now use the currentLatLng variable, which is a LatLng object
     });
@@ -79,8 +77,6 @@ class _SearchLocationScreenState extends State<SearchLocationScreen> {
       currentLocation = newLoc;
 
       // Convert the LocationData to a LatLng object
-      LatLng currentLatLng =
-          LatLng(currentLocation!.latitude!, currentLocation!.longitude!);
 
       setState(() {
         // Update the UI with the new location data
@@ -88,6 +84,7 @@ class _SearchLocationScreenState extends State<SearchLocationScreen> {
     });
   }
 
+  @override
   void initState() {
     getCurrentLocation();
     super.initState();

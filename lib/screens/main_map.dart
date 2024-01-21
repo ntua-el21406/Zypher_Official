@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:my_zypher/db.dart';
@@ -25,8 +24,6 @@ class MainMap extends StatefulWidget {
 }
 
 class _MainMap extends State<MainMap> {
-  final Completer<GoogleMapController> _controller = Completer();
-
   late PolylinePoints polylinePoints;
   // late GoogleMapController _onMapCreated;
 
@@ -40,20 +37,20 @@ class _MainMap extends State<MainMap> {
   //
   void setCustomMarkerIcon() {
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration.empty, "assets/Pin_source.png")
+            ImageConfiguration.empty, 'assets/Pin_source.png')
         .then((icon) {
       sourceIcon = icon;
     });
 
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Pin_destination.png" // Assuming this is for a different marker
+            'assets/Pin_destination.png' // Assuming this is for a different marker
             )
         .then((icon) {
       destinationIcon = icon;
     });
 
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Badge.png" // Assuming this is for a different marker
+            'assets/Badge.png' // Assuming this is for a different marker
             )
         .then((icon) {
       currentLocationIcon = icon;
@@ -96,14 +93,7 @@ class _MainMap extends State<MainMap> {
     }
   }
 
-  //
-  //
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-  //
-  //
-
+  @override
   void initState() {
     getCurrentLocation();
     setCustomMarkerIcon();
@@ -117,7 +107,7 @@ class _MainMap extends State<MainMap> {
       body: Stack(
         children: <Widget>[
           currentLocation == null
-              ? const Center(child: Text("loading"))
+              ? const Center(child: Text('loading'))
               : GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     mapController = controller;
@@ -130,11 +120,11 @@ class _MainMap extends State<MainMap> {
                   ),
                   markers: {
                     Marker(
-                      markerId: MarkerId("Current Location"),
+                      markerId: const MarkerId('Current Location'),
                       icon: currentLocationIcon,
                       position: LatLng(currentLocation!.latitude!,
                           currentLocation!.longitude!),
-                      infoWindow: InfoWindow(title: 'Source'),
+                      infoWindow: const InfoWindow(title: 'Source'),
                     ),
                   },
                 ),
@@ -148,8 +138,8 @@ class _MainMap extends State<MainMap> {
               padding: const EdgeInsets.all(8.0),
               child: Card(
                 child: ListTile(
-                  leading: Icon(Icons.search),
-                  title: Text('Tap to search...'),
+                  leading: const Icon(Icons.search),
+                  title: const Text('Tap to search...'),
                   onTap: () {
                     // Navigate to the search page
                     Navigator.push(
@@ -187,9 +177,9 @@ class _MainMap extends State<MainMap> {
                       );
                     }
                   },
-                  child: Icon(Icons.navigation),
+                  child: const Icon(Icons.navigation),
                 ),
-                SizedBox(width: 75), // Spacing between buttons
+                const SizedBox(width: 75), // Spacing between buttons
 
                 // "Choose Role" button
                 ElevatedButton(
@@ -208,7 +198,8 @@ class _MainMap extends State<MainMap> {
                     backgroundColor: Theme.of(context)
                         .colorScheme
                         .secondary, // Use theme's secondary color
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4.0),
                     ),

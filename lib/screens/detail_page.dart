@@ -5,40 +5,40 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import '../core/constants/constants.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geodesy/geodesy.dart' as geo;
-
-
-
-
+import 'package:my_zypher/db.dart';
+import './selection_page.dart';
+import '../components/user_role.dart';
 
 class DetailPage extends StatefulWidget {
   final Map<String, dynamic> user_location;
+  final DatabaseHelper dbHelper;
+  final int id;
+  final UserRole userRole;
 
-  const DetailPage({Key? key, required this.user_location}) : super(key: key);
+  const DetailPage({
+    Key? key,
+    required this.user_location,
+    required this.dbHelper,
+    required this.id,
+    required this.userRole,
+  }) : super(key: key);
 
   @override
   _DetailPageState createState() => _DetailPageState();
 }
 
-
-
-
-
 class _DetailPageState extends State<DetailPage> {
+  late GoogleMapController mapController;
+  LatLng? location; // Will hold the geocoded location
+  LatLng? location_end;
+  LatLng? location_start;
+  LatLng? startPoint;
+  LatLng? endPoint;
+  late PolylinePoints polylinePoints;
 
-
-late GoogleMapController mapController;
-LatLng? location; // Will hold the geocoded location
-LatLng? location_end;
-LatLng? location_start;
-LatLng? startPoint;
-LatLng? endPoint;
-late PolylinePoints polylinePoints;
-
-  
   BitmapDescriptor sourceIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor currentLocationIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor destinationIcon = BitmapDescriptor.defaultMarker;
-
 
   void setCustomMarkerIcon() {
     BitmapDescriptor.fromAssetImage(
@@ -136,20 +136,37 @@ late PolylinePoints polylinePoints;
     return totalDistance / 1000; // Convert meters to kilometers
   }
 
+  Marker? selectedMarker; // Declare selectedMarker outside the function
 
+  Future<void> createMarker() async {
+    // Replace with your actual coordinates
+
+    Marker marker = Marker(
+        markerId: MarkerId(widget.user_location['id']
+            .toString()), // Assuming widget.id is an int
+        position: LatLng(double.tryParse(widget.user_location['start_lat'])!,
+            double.tryParse(widget.user_location['start_lon'])!)
+        // You can customize other properties of the marker here, such as icon, info window, etc.
+        );
+
+    selectedMarker = marker; // Assign the created marker to selectedMarker
+  }
 
   @override
   void initState() {
     super.initState();
     setupRoute();
     setCustomMarkerIcon();
+    createMarker();
   }
 
   void setupRoute() async {
     await getCurrentLocation();
-    await _geocodeAddress("${widget.user_location['end_lat']},${widget.user_location['end_lon']}");
+    await _geocodeAddress(
+        "${widget.user_location['end_lat']},${widget.user_location['end_lon']}");
     location_end = location!;
-    await _geocodeAddress("${widget.user_location['start_lat']},${widget.user_location['start_lon']}");
+    await _geocodeAddress(
+        "${widget.user_location['start_lat']},${widget.user_location['start_lon']}");
     location_start = location!;
     if (currentLocation != null && location != null) {
       await getPolyPoints(location_start!, location_end!);
@@ -166,24 +183,28 @@ late PolylinePoints polylinePoints;
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             CircleAvatar(
               radius: 50,
-              backgroundImage: NetworkImage(widget.user_location['image_path'] ?? 'default_image_url'),
+              backgroundImage: NetworkImage(
+                  widget.user_location['image_path'] ?? 'default_image_url'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               widget.user_location['username'] ?? 'Unknown',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _detailItem('Email:', widget.user_location['email']),
             _detailItem('First Name:', widget.user_location['firstName']),
             _detailItem('Last Name:', widget.user_location['lastName']),
             // Add more details as needed
 
-            SizedBox(height: 20),
-          _buildGoogleMap(),
+            const SizedBox(height: 20),
+            _buildGoogleMap(),
+
+            const SizedBox(height: 20),
+            _buildRedirectButton(),
           ],
         ),
       ),
@@ -197,13 +218,13 @@ late PolylinePoints polylinePoints;
         children: <Widget>[
           Text(
             title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               value ?? 'Not available',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -213,58 +234,67 @@ late PolylinePoints polylinePoints;
   }
 
   Widget _buildGoogleMap() {
+    if (polylineCoordinates.isEmpty) {
+      // If polylineCoordinates are empty, you can show a loading spinner or a placeholder
+      return const Center(child: CircularProgressIndicator());
+    }
 
-      if (polylineCoordinates.isEmpty) {
-    // If polylineCoordinates are empty, you can show a loading spinner or a placeholder
-    return Center(child: CircularProgressIndicator());
-  }
+    // Example latitude and longitude. Replace with actual data.
+    return Container(
+      height: 300, // Set the height of the map
+      child: GoogleMap(
+        onMapCreated: (controller) => mapController = controller,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(double.tryParse(widget.user_location['end_lat'])!,
+              double.tryParse(widget.user_location['end_lon'])!),
 
-  // Example latitude and longitude. Replace with actual data.
-  return Container(
-    height: 300, // Set the height of the map
-    child: GoogleMap(
-      onMapCreated: (controller) => mapController = controller,
-      initialCameraPosition: CameraPosition(
-        
-        target: LatLng(
-          double.tryParse(widget.user_location['end_lat'])!,
-          double.tryParse(widget.user_location['end_lon'])!
-           ),
-
-
-        zoom: 14.0, // Adjust the zoom level as needed
-      ),
+          zoom: 14.0, // Adjust the zoom level as needed
+        ),
         polylines: {
           Polyline(
-            polylineId: PolylineId("route"),
+            polylineId: const PolylineId("route"),
             points: polylineCoordinates,
-            color: Color(0xfff50000),
+            color: const Color(0xfff50000),
             width: 6,
           ),
         },
-      markers: Set.from([
-        Marker(
-          markerId: MarkerId('userLocation'),
-          position: LatLng(
-          double.tryParse(widget.user_location['end_lat'])!,
-          double.tryParse(widget.user_location['end_lon'])!
-           ),
-        ),
-
+        markers: Set.from([
           Marker(
-            markerId: MarkerId('userLocation'),
+            markerId: const MarkerId('userLocation'),
+            position: LatLng(double.tryParse(widget.user_location['end_lat'])!,
+                double.tryParse(widget.user_location['end_lon'])!),
+          ),
+          Marker(
+            markerId: const MarkerId('userLocationStart'),
             position: LatLng(
-            double.tryParse(widget.user_location['start_lat'])!,
-            double.tryParse(widget.user_location['start_lon'])!
-            ),
+                double.tryParse(widget.user_location['start_lat'])!,
+                double.tryParse(widget.user_location['start_lon'])!),
             icon: currentLocationIcon,
           ),
-
-
-        ]
+        ]),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  Widget _buildRedirectButton() {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SelectionPage(
+              id: widget.id,
+              dbHelper: widget.dbHelper,
+              userRole: widget.userRole,
+              marker: selectedMarker!,
+              currentLocation: currentLocation!,
+              // Pass any necessary data to the SelectionPage
+              // For example, you can pass widget.user_location or other details
+            ),
+          ),
+        );
+      },
+      child: const Text('Choose this passenger'),
+    );
+  }
 }

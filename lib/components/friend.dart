@@ -64,7 +64,10 @@ class FriendItem extends StatelessWidget {
           ),
           ElevatedButton.icon(
             onPressed: () {
-              // Add friend logic
+              dbHelper.deleteFriend(id, parentId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Friend Removed')),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple, // Background color
@@ -75,8 +78,8 @@ class FriendItem extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             ),
-            icon: const Icon(Icons.add),
-            label: const Text('Reschedule'),
+            icon: const Icon(Icons.remove),
+            label: const Text('Remove'),
           ),
         ],
       ),

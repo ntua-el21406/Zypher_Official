@@ -10,7 +10,6 @@ void main() async {
   await dbHelper.insertRandomLocations(100);
   await dbHelper.insertRandomUsers(100);
 
-
   runApp(MyApp(dbHelper: dbHelper));
 }
 

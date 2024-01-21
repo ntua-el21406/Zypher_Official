@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '/components/network.utility.dart';
 import '/models/autocomplate_prediction.dart';
-// import 'package:http/http.dart';
 import '/components/location_list_tile.dart';
 import '/core/constants/constants.dart';
-// import '/screens/main_map.dart';
-// import 'package:my_zypher/screens/route_screen_scheduled.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import './main_screen.dart';
@@ -28,7 +25,8 @@ class SearchLocationDriverScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SearchLocationDriverScreen> createState() => _SearchLocationDriverScreen();
+  State<SearchLocationDriverScreen> createState() =>
+      _SearchLocationDriverScreen();
 }
 
 List<LatLng> polylineCoordinates = [];
@@ -42,9 +40,9 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
 
   void placeAutocomplete(String query) async {
     Uri uri =
-        Uri.https("maps.googleapis.com", "maps/api/place/autocomplete/json", {
-      "input": query,
-      "key": google_api_key, // make sure you add your api key
+        Uri.https('maps.googleapis.com', 'maps/api/place/autocomplete/json', {
+      'input': query,
+      'key': google_api_key, // make sure you add your api key
     });
     // it's time to make the GET request
     //
@@ -69,8 +67,6 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
       currentLocation = locationData;
 
       // Convert the LocationData to a LatLng object
-      LatLng currentLatLng =
-          LatLng(currentLocation!.latitude!, currentLocation!.longitude!);
 
       // You can now use the currentLatLng variable, which is a LatLng object
     });
@@ -79,8 +75,6 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
       currentLocation = newLoc;
 
       // Convert the LocationData to a LatLng object
-      LatLng currentLatLng =
-          LatLng(currentLocation!.latitude!, currentLocation!.longitude!);
 
       setState(() {
         // Update the UI with the new location data
@@ -110,7 +104,7 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
           ),
         ),
         title: const Text(
-          "Set Destination Location",
+          'Set Destination Location',
           style: TextStyle(color: textColorLightTheme),
         ),
         actions: [
@@ -158,11 +152,11 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
                   );
                 },
                 decoration: InputDecoration(
-                  hintText: "Search your location",
+                  hintText: 'Search your location',
                   prefixIcon: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: SvgPicture.asset(
-                      "assets/icons/location_pin.svg",
+                      'assets/icons/location_pin.svg',
                       color: secondaryColor40LightTheme,
                     ),
                   ),
@@ -175,9 +169,6 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
             thickness: 4,
             color: secondaryColor5LightTheme,
           ),
-
-
-
           const Divider(
             height: 4,
             thickness: 4,
@@ -194,12 +185,11 @@ class _SearchLocationDriverScreen extends State<SearchLocationDriverScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => RoutePageDriver(
-                            address_end: prediction.description!,
-                            id: widget.id,
-                            dbHelper: widget.dbHelper,
-                            userRole: widget
-                                .userRole)), 
+                          builder: (context) => RoutePageDriver(
+                              address_end: prediction.description!,
+                              id: widget.id,
+                              dbHelper: widget.dbHelper,
+                              userRole: widget.userRole)),
                     );
                   },
                   location: prediction.description!,

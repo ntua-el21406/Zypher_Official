@@ -75,8 +75,8 @@ class _FriendsScreenState extends State<FriendsScreen>
   }
 }
 
-// =======================================================================
-// MY FRIENDS
+// ===================== MY FRIENDS ====================================
+
 class MyFriendsTab extends StatefulWidget {
   final DatabaseHelper dbHelper;
   final int id;
@@ -138,8 +138,8 @@ class _MyFriendsTabState extends State<MyFriendsTab> {
   }
 }
 
-// ======================================================================
-// RECOMMENDED FRIENDS
+// ========================= RECOMMENDED FRIENDS ================================
+
 class RecommendedTab extends StatefulWidget {
   final DatabaseHelper dbHelper;
   final int id;
@@ -202,8 +202,8 @@ class _RecommendedTabState extends State<RecommendedTab> {
   }
 }
 
-// ===============================================================
-// REQUESTS
+// ===================== REQUESTS =============================
+
 class RequestsTab extends StatefulWidget {
   final DatabaseHelper dbHelper;
   final int id;

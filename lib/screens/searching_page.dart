@@ -5,7 +5,6 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import '../core/constants/constants.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geodesy/geodesy.dart' as geo;
-import './entry_screen.dart';
 import './main_screen.dart';
 import 'package:my_zypher/db.dart';
 import 'dart:async';
@@ -28,7 +27,6 @@ class SearchingPage extends StatefulWidget {
     required this.dbHelper,
     required this.id,
     required this.userRole,
-    
     required this.locationid,
   }) : super(key: key);
 
@@ -135,19 +133,18 @@ class _SearchingPage extends State<SearchingPage> {
   double totalDistance = 0;
 
   double calculateRouteDistance(List<LatLng> polylineCoordinates) {
-      final geo.Geodesy geodesyInstance = geo.Geodesy();
-      totalDistance = 0;
+    final geo.Geodesy geodesyInstance = geo.Geodesy();
+    totalDistance = 0;
 
-      for (int i = 0; i < polylineCoordinates.length - 1; i++) {
-        LatLng start = polylineCoordinates[i];
-        LatLng end = polylineCoordinates[i + 1];
-        totalDistance += geodesyInstance.distanceBetweenTwoGeoPoints(
-          geo.LatLng(start.latitude, start.longitude),
-          geo.LatLng(end.latitude, end.longitude),
-        );
-      }
-
-      return totalDistance / 1000; // Convert meters to kilometers
+    for (int i = 0; i < polylineCoordinates.length - 1; i++) {
+      LatLng start = polylineCoordinates[i];
+      LatLng end = polylineCoordinates[i + 1];
+      totalDistance += geodesyInstance.distanceBetweenTwoGeoPoints(
+        geo.LatLng(start.latitude, start.longitude),
+        geo.LatLng(end.latitude, end.longitude),
+      );
+    }
+    return totalDistance / 1000; // Convert meters to kilometers
   }
 
   @override
@@ -169,34 +166,27 @@ class _SearchingPage extends State<SearchingPage> {
     calculateRouteDistance(polylineCoordinates);
   }
 
-
-
-
   void checkLocationStatus(String locationId, BuildContext context) {
-    Timer.periodic(Duration(seconds: 5), (Timer timer) async {
-      var dbHelper = DatabaseHelper();
-      String status = await dbHelper.getLocationStatus(locationId);
-      print("AAAAAAAAAAAAAAAA   AAAAAAAAAA  AAAAA   AAAAAAAAAAAAAA AA AAAAAAAAAA  AAAAAAACurrent status of location $locationId: $status");
-
-      if (status == '1') {
-        timer.cancel();
-        print("AAAAAAAAAAAAAAAA   AAAAAAAAAA  AAAAA   AAAAAAAAAAAAAA AA AAAAAAAAAA  AAAAAAAStatus changed to 1 for location $locationId");
-
-        // Redirect to a new page
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => FoundDriverPage(
-            id: widget.id,
-            dbHelper: widget.dbHelper,
-            userRole: widget.userRole,
-          )), // Replace NewPage with your destination page
-        );
-      }
-    });
+    Timer.periodic(
+      Duration(seconds: 5),
+      (Timer timer) async {
+        var dbHelper = DatabaseHelper();
+        String status = await dbHelper.getLocationStatus(locationId);
+        if (status == '1') {
+          timer.cancel();
+          // Redirect to a new page
+          Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (context) => FoundDriverPage(
+                      id: widget.id,
+                      dbHelper: widget.dbHelper,
+                      userRole: widget.userRole,
+                    )), // Replace NewPage with your destination page
+          );
+        }
+      },
+    );
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -233,8 +223,8 @@ class _SearchingPage extends State<SearchingPage> {
                     Marker(
                       markerId: MarkerId("Current Location"),
                       icon: currentLocationIcon,
-                      position: LatLng(currentLocation!.latitude!,
-                          currentLocation!.longitude!),
+                      position: LatLng(currentLocation!.latitude,
+                          currentLocation!.longitude),
                       infoWindow: InfoWindow(title: 'Source'),
                     ),
                   },
@@ -272,19 +262,18 @@ class _SearchingPage extends State<SearchingPage> {
                               ),
                             );
                           },
-                          style: ElevatedButton.styleFrom(primary: Colors.grey),
                           child: Text('Cancel'),
                         ),
                         ElevatedButton(
-                      onPressed: () async {
-                        var dbHelper = DatabaseHelper();
-                        await dbHelper.updateLocationStatus(widget.locationid);
+                          onPressed: () async {
+                            var dbHelper = DatabaseHelper();
+                            await dbHelper
+                                .updateLocationStatus(widget.locationid);
 
-                        // You can add more code here if you need to perform additional actions after the update
-                      },
-                      child: Text('Update'),
-                    )
-
+                            // You can add more code here if you need to perform additional actions after the update
+                          },
+                          child: Text('Reload'),
+                        )
                       ],
                     ),
                   ],

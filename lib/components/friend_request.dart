@@ -77,6 +77,9 @@ class FriendRequestItem extends StatelessWidget {
                       'sender_id': id,
                       'receiver_id': parentId,
                     });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Friend Request Accepted')),
+                    );
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Accept'),
@@ -100,6 +103,9 @@ class FriendRequestItem extends StatelessWidget {
                       'sender_id': id,
                       'receiver_id': parentId,
                     });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Friend Request Removed')),
+                    );
                   },
                   icon: const Icon(Icons.remove),
                   label: const Text('Remove'),

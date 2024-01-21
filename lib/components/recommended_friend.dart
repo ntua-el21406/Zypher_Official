@@ -63,15 +63,19 @@ class RecommendedFriendItem extends StatelessWidget {
             ),
           ),
           ElevatedButton.icon(
-            onPressed: () {
-              dbHelper.insertFriendRequest({
+            onPressed: () async {
+              String response = await dbHelper.insertFriendRequest({
                 'sender_id': parentId,
                 'receiver_id': id,
               });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(response)),
+              );
             },
             style: ElevatedButton.styleFrom(
-              primary: Colors.deepPurple, // Background color
-              onPrimary: Colors.white, // Icon and text color
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.deepPurple, // Icon and text color
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0),
               ),

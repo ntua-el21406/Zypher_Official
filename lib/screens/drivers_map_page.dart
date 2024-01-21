@@ -1,30 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_zypher/db.dart';
-import 'package:location/location.dart';
 import 'package:my_zypher/screens/entry_screen.dart';
 import './selection_page.dart';
 import '../components/user_role.dart';
 import './passenger_list.dart';
 import './location_search_driver_screen.dart';
-
-import 'package:geocoding/geocoding.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import '../core/constants/constants.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geodesy/geodesy.dart' as geo;
-
-
-
-
-
 
 class DriversMapPage extends StatefulWidget {
   final DatabaseHelper dbHelper;
   final int id;
   final UserRole userRole;
   // final String address_end;
-
 
   DriversMapPage({
     Key? key,
@@ -49,19 +40,12 @@ class _DriversMapPage extends State<DriversMapPage> {
   //
   void setCustomMarkerIcon() {
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Badge.png" // Assuming this is for a different marker
+            'assets/Badge.png' // Assuming this is for a different marker
             )
         .then((icon) {
       currentLocationIcon = icon;
     });
   }
-
-
-
-
-
-
-
 
   @override
   void initState() {
@@ -69,30 +53,10 @@ class _DriversMapPage extends State<DriversMapPage> {
     getCurrentLocation();
     setCustomMarkerIcon();
     fetchAndPrintLocations();
-    
+
     _goToMyCurrentLocation();
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   LatLng? currentLocation;
 
   Future<void> getCurrentLocation() async {
@@ -104,26 +68,10 @@ class _DriversMapPage extends State<DriversMapPage> {
             LatLng(locationData.latitude!, locationData.longitude!);
       });
     } catch (e) {
-      print("Failed to get current location: $e");
+      print('Failed to get current location: $e');
       // Handle exception (e.g., location services disabled)
     }
   }
-
-  // Future<void> _geocodeAddress(String address) async {
-  //   location = null;
-  //   try {
-  //     List<Location> locations = await locationFromAddress(address);
-  //     if (locations.isNotEmpty) {
-  //       setState(() {
-  //         location =
-  //             LatLng(locations.first.latitude, locations.first.longitude);
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print("Failed to get location: $e");
-  //     // Handle exception or show an error message
-  //   }
-  // }
 
   List<LatLng> polylineCoordinates = [];
 
@@ -164,36 +112,6 @@ class _DriversMapPage extends State<DriversMapPage> {
     return totalDistance / 1000; // Convert meters to kilometers
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-  // LocationData? currentLocation;
-  // GoogleMapController? mapController;
-
-  // // Future<void> getCurrentLocation() async {
-  // //   Location location = Location();
-
-  //   location.getLocation().then((locationData) {
-  //     currentLocation = locationData;
-  //     // You can use the currentLocation variable now, it will have the location data
-  //   });
-
-  //   location.onLocationChanged.listen((newLoc) {
-  //     currentLocation = newLoc;
-
-  //     setState(() {});
-  //   });
-  // }
-
   void _goToMyCurrentLocation() {
     // Method to animate the map to the current location
     // Ensure that currentLocation is updated with the user's current location
@@ -202,7 +120,7 @@ class _DriversMapPage extends State<DriversMapPage> {
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target:
-                LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+                LatLng(currentLocation!.latitude, currentLocation!.longitude),
             zoom: 15,
           ),
         ),
@@ -210,11 +128,8 @@ class _DriversMapPage extends State<DriversMapPage> {
     }
   }
 
-  void fetchAndPrintLocations()  async{
+  void fetchAndPrintLocations() async {
     var locations = await dbService.getLocations();
-
-
-
 
     // Assuming markers is a Set<Marker>
     Set<Marker> newMarkers = {};
@@ -235,33 +150,28 @@ class _DriversMapPage extends State<DriversMapPage> {
         infoWindow: InfoWindow(title: 'Marker ${location['id']}'),
         icon: currentLocationIcon,
       );
- 
 
       newMarkers.add(marker);
     }
 
     await getCurrentLocation();
-      // Check if currentLocation is not null and has valid coordinates
+    // Check if currentLocation is not null and has valid coordinates
     if (currentLocation != null) {
       Marker marker2 = Marker(
         markerId: MarkerId('currentLocation'),
-        position: LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+        position: LatLng(currentLocation!.latitude, currentLocation!.longitude),
         infoWindow: InfoWindow(title: 'My Current Location'),
       );
 
       newMarkers.add(marker2);
     } else {
-      print("Current location is null or invalid");
+      print('Current location is null or invalid');
     }
-
-
 
     setState(() {
       markers = newMarkers;
     });
   }
-
-
 
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -280,12 +190,11 @@ class _DriversMapPage extends State<DriversMapPage> {
             ListTile(
               leading: Icon(Icons.navigation),
               title: Text('Want to choose this User'),
-              onTap: () async{
+              onTap: () async {
+                var dbHelper = DatabaseHelper();
 
-                var dbHelper= DatabaseHelper();
-                                
-                await dbHelper.updateLocationStatus(int.parse(marker.markerId.value));
-
+                await dbHelper
+                    .updateLocationStatus(int.parse(marker.markerId.value));
 
                 // ate to new page
                 Navigator.push(
@@ -293,8 +202,8 @@ class _DriversMapPage extends State<DriversMapPage> {
                   MaterialPageRoute(
                     builder: (context) => SelectionPage(
                       marker: marker,
-                      currentLocation: LatLng(currentLocation!.latitude!,
-                          currentLocation!.longitude!),
+                      currentLocation: LatLng(currentLocation!.latitude,
+                          currentLocation!.longitude),
                       id: widget.id,
                       dbHelper: widget.dbHelper,
                       userRole: widget.userRole,
@@ -315,16 +224,13 @@ class _DriversMapPage extends State<DriversMapPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          // AppBar(
-          //   title: Text('Users Close to you'),
-          // ),
           currentLocation == null
-              ? const Center(child: Text("loading"))
+              ? const Center(child: Text('loading'))
               : GoogleMap(
                   onMapCreated: onMapCreated,
                   initialCameraPosition: CameraPosition(
-                    target: LatLng(currentLocation!.latitude!,
-                        currentLocation!.longitude!),
+                    target: LatLng(
+                        currentLocation!.latitude, currentLocation!.longitude),
                     zoom: 13.5,
                   ),
                   markers: markers
@@ -334,72 +240,74 @@ class _DriversMapPage extends State<DriversMapPage> {
                       .toSet(),
                 ),
 
-           Positioned(
-      top: MediaQuery.of(context).padding.top,
-      left: 0,
-      right: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Card(
-          child: ListTile(
-            leading: Icon(Icons.search),
-            title: Text('Tap to search...'),
-            onTap: () {
-              // Navigate to the search page
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SearchLocationDriverScreen(
-                    id: widget.id,
-                    dbHelper: widget.dbHelper,
-                    userRole: widget.userRole,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    ),
-    Positioned(
-      top: MediaQuery.of(context).padding.top + 60, // Adjust the top value as needed
-      left: 0,
-      right: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0), // Adjust padding as needed
-        child: ElevatedButton(
-          onPressed: () {
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PassengersListPage(
-                  address: LatLng(0,0),
-                  rangeInKm: 1000000000000,
-
+          Positioned(
+            top: MediaQuery.of(context).padding.top,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Card(
+                child: ListTile(
+                  leading: Icon(Icons.search),
+                  title: Text('Tap to search...'),
+                  onTap: () {
+                    // Navigate to the search page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchLocationDriverScreen(
+                          id: widget.id,
+                          dbHelper: widget.dbHelper,
+                          userRole: widget.userRole,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4.0),
             ),
           ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.person_outline, color: Colors.white),
-              SizedBox(width: 8),
-              Text('Passenger List', style: TextStyle(color: Colors.white)),
-            ],
+          Positioned(
+            top: MediaQuery.of(context).padding.top +
+                60, // Adjust the top value as needed
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0), // Adjust padding as needed
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PassengersListPage(
+                        address: LatLng(0, 0),
+                        rangeInKm: 100000,
+                        id: widget.id,
+                        dbHelper: widget.dbHelper,
+                        userRole: widget.userRole,
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person_outline, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Passenger List',
+                        style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-    ),
-          
 
           // 'Current Location' and 'Choose Role' buttons
           Positioned(
@@ -414,13 +322,12 @@ class _DriversMapPage extends State<DriversMapPage> {
                       mapController!.animateCamera(
                         CameraUpdate.newCameraPosition(
                           CameraPosition(
-                            target: LatLng(currentLocation!.latitude!,
-                                currentLocation!.longitude!),
+                            target: LatLng(currentLocation!.latitude,
+                                currentLocation!.longitude),
                             zoom: 15,
                           ),
                         ),
                       );
-                      
                     }
                   },
                   child: Icon(Icons.navigation),
@@ -434,7 +341,6 @@ class _DriversMapPage extends State<DriversMapPage> {
                         builder: (context) => EntryScreen(
                           id: widget.id,
                           dbHelper: widget.dbHelper,
-                  
                         ),
                       ),
                     );

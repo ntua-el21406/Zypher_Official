@@ -1,17 +1,16 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:my_zypher/screens/searching_page.dart';
 import '../core/constants/constants.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geodesy/geodesy.dart' as geo;
-import './main_screen.dart';
 import 'package:my_zypher/db.dart';
 import '../components/user_role.dart';
 import './location_search_driver_screen.dart';
 import 'package:flutter_svg/svg.dart';
-import 'selection_page.dart';
 
 class RoutePageDriver extends StatefulWidget {
   // final String address_start;
@@ -56,20 +55,20 @@ class _RoutePageDriver extends State<RoutePageDriver> {
   //
   void setCustomMarkerIcon() {
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration.empty, "assets/Pin_source.png")
+            ImageConfiguration.empty, 'assets/Pin_source.png')
         .then((icon) {
       sourceIcon = icon;
     });
 
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Pin_destination.png" // Assuming this is for a different marker
+            'assets/Pin_destination.png' // Assuming this is for a different marker
             )
         .then((icon) {
       destinationIcon = icon;
     });
 
     BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-            "assets/Badge.png" // Assuming this is for a different marker
+            'assets/Badge.png' // Assuming this is for a different marker
             )
         .then((icon) {
       currentLocationIcon = icon;
@@ -78,29 +77,6 @@ class _RoutePageDriver extends State<RoutePageDriver> {
 
 ////////////TELOS EIKONIDION////////////////////
 //////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   LatLng? currentLocation;
 
@@ -113,7 +89,7 @@ class _RoutePageDriver extends State<RoutePageDriver> {
             LatLng(locationData.latitude!, locationData.longitude!);
       });
     } catch (e) {
-      print("Failed to get current location: $e");
+      print('Failed to get current location: $e');
       // Handle exception (e.g., location services disabled)
     }
   }
@@ -129,7 +105,7 @@ class _RoutePageDriver extends State<RoutePageDriver> {
         });
       }
     } catch (e) {
-      print("Failed to get location: $e");
+      print('Failed to get location: $e');
       // Handle exception or show an error message
     }
   }
@@ -146,11 +122,11 @@ class _RoutePageDriver extends State<RoutePageDriver> {
       // travelMode: TravelMode.driving,
     );
     if (result.points.isNotEmpty) {
-      result.points.forEach(
-        (PointLatLng point) => polylineCoordinates.add(
+      for (var point in result.points) {
+        polylineCoordinates.add(
           LatLng(point.latitude, point.longitude),
-        ),
-      );
+        );
+      }
       setState(() {});
     }
   }
@@ -176,7 +152,7 @@ class _RoutePageDriver extends State<RoutePageDriver> {
   @override
   void initState() {
     super.initState();
-    
+
     setCustomMarkerIcon();
     // fetchAndPrintLocations();
     setupRoute();
@@ -186,7 +162,8 @@ class _RoutePageDriver extends State<RoutePageDriver> {
     await getCurrentLocation();
     await _geocodeAddress(widget.address_end);
     location_end = location!;
-    await _geocodeAddress("${currentLocation!.latitude!}, ${currentLocation!.longitude}");
+    await _geocodeAddress(
+        '${currentLocation!.latitude}, ${currentLocation!.longitude}');
     location_start = location!;
     if (currentLocation != null && location != null) {
       await getPolyPoints(location_start!, location_end!);
@@ -197,11 +174,11 @@ class _RoutePageDriver extends State<RoutePageDriver> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-          appBar: AppBar(
+        appBar: AppBar(
           bottom: PreferredSize(
-            preferredSize: Size.fromHeight(kToolbarHeight),
+            preferredSize: const Size.fromHeight(kToolbarHeight),
             child: Padding(
-              padding: EdgeInsets.all(defaultPadding),
+              padding: const EdgeInsets.all(defaultPadding),
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -215,14 +192,15 @@ class _RoutePageDriver extends State<RoutePageDriver> {
                     ),
                   );
                 },
-                child: AbsorbPointer( // Prevents the TextField from gaining focus
+                child: AbsorbPointer(
+                  // Prevents the TextField from gaining focus
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: widget.address_end,
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: SvgPicture.asset(
-                          "assets/icons/location_pin.svg",
+                          'assets/icons/location_pin.svg',
                           color: secondaryColor40LightTheme,
                         ),
                       ),
@@ -238,34 +216,30 @@ class _RoutePageDriver extends State<RoutePageDriver> {
               ),
             ),
           ),
-
         ),
-
-
-
-      body: Stack(children: <Widget>[
-      location == null
-          ? Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              onMapCreated: (controller) => mapController = controller,
-              initialCameraPosition: CameraPosition(
-                target: location!,
-                zoom: 15,
-              ),
-              polylines: {
-                Polyline(
-                  polylineId: PolylineId("route"),
-                  points: polylineCoordinates,
-                  color: Color(0xfff50000),
-                  width: 6,
+        body: Stack(children: <Widget>[
+          location == null
+              ? const Center(child: CircularProgressIndicator())
+              : GoogleMap(
+                  onMapCreated: (controller) => mapController = controller,
+                  initialCameraPosition: CameraPosition(
+                    target: location!,
+                    zoom: 15,
+                  ),
+                  polylines: {
+                    Polyline(
+                      polylineId: const PolylineId('route'),
+                      points: polylineCoordinates,
+                      color: const Color(0xfff50000),
+                      width: 6,
+                    ),
+                  },
+                  // markers:markers
+                  //         .map((marker) => marker.copyWith(
+                  //               onTapParam: () => onMarkerTap(marker),
+                  //             ))
+                  //         .toSet(),
                 ),
-              },
-              // markers:markers
-              //         .map((marker) => marker.copyWith(
-              //               onTapParam: () => onMarkerTap(marker),
-              //             ))
-              //         .toSet(),
-            ),
-    ]));
+        ]));
   }
 }

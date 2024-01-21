@@ -44,11 +44,6 @@ class _SelectionPage extends State<SelectionPage> {
       // And then calculateRouteDistance with the result
       calculateRouteDistance(polylineCoordinates);
     });
-
-    
-
-
-
   }
 
   double totalDistance = 0;
@@ -107,8 +102,8 @@ class _SelectionPage extends State<SelectionPage> {
                 widget.marker,
                 Marker(
                   markerId: MarkerId("Current Location"),
-                  position: LatLng(widget.currentLocation.latitude!,
-                      widget.currentLocation!.longitude!),
+                  position: LatLng(widget.currentLocation.latitude,
+                      widget.currentLocation.longitude),
                   infoWindow: InfoWindow(title: 'Source'),
                 ),
               },
@@ -125,7 +120,7 @@ class _SelectionPage extends State<SelectionPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: ElevatedButton(
         onPressed: () async {
           // var dbHelper = DatabaseHelper();
 
@@ -135,17 +130,25 @@ class _SelectionPage extends State<SelectionPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => CarpoolPage2(
-                      id: widget.id,
-                      dbHelper: widget.dbHelper,
-                      marker: widget.marker,
-                      location_id: widget.marker.markerId,
-                      userRole: widget.userRole,
-                    )),
+              builder: (context) => CarpoolPage2(
+                id: widget.id,
+                dbHelper: widget.dbHelper,
+                marker: widget.marker,
+                location_id: widget.marker.markerId,
+                userRole: widget.userRole,
+              ),
+            ),
           );
         },
-        child: Text('Got Passenger'),
-        backgroundColor: Colors.blue,
+        style: ElevatedButton.styleFrom(
+          primary: Theme.of(context).primaryColor,
+          onPrimary: Colors.white,
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: 20.0), // Adjust padding as needed
+          child: Text('Got Passenger'),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

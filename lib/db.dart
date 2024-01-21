@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -33,7 +32,7 @@ class DatabaseHelper {
       onCreate: (db, version) async {},
       singleInstance: true,
     );
-    
+
     await database.execute(
       '''CREATE TABLE IF NOT EXISTS users(
           id INTEGER PRIMARY KEY,
@@ -86,76 +85,65 @@ class DatabaseHelper {
           end_lon TEXT,
           status TEXT)''',
     );
-
-    
-
-
-
     print('Database Initialised Succesfully');
     return database;
   }
 
-
   Future<void> insertRandomLocations(int count) async {
     final db = await database;
-    
-    int? rowCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM locations'));
+
+    int? rowCount = Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM locations'));
 
     if (rowCount == 0) {
+      Random random = Random();
 
-        Random random = Random();
+      // Define the boundaries of Athens, Greece
+      double latStart = 37.95;
+      double latEnd = 38.05;
+      double lonStart = 23.70;
+      double lonEnd = 23.80;
+      for (int i = 0; i < count; i++) {
+        try {
+          double startLat =
+              latStart + (latEnd - latStart) * random.nextDouble();
+          double startLon =
+              lonStart + (lonEnd - lonStart) * random.nextDouble();
+          double endLat = latStart + (latEnd - latStart) * random.nextDouble();
+          double endLon = lonStart + (lonEnd - lonStart) * random.nextDouble();
 
-        // Define the boundaries of Athens, Greece
-        double latStart = 37.95;
-        double latEnd = 38.05;
-        double lonStart = 23.70;
-        double lonEnd = 23.80;
-        for (int i = 0; i < count; i++) {
-      try {
-        double startLat = latStart + (latEnd - latStart) * random.nextDouble();
-        double startLon = lonStart + (lonEnd - lonStart) * random.nextDouble();
-        double endLat = latStart + (latEnd - latStart) * random.nextDouble();
-        double endLon = lonStart + (lonEnd - lonStart) * random.nextDouble();
+          int userId = random.nextInt(count) + 1; // User IDs 1 through 10
+          String status = random.nextBool() ? '1' : '0'; // Status 0 or 1
 
-        int userId = random.nextInt(count) + 1; // User IDs 1 through 10
-        String status = random.nextBool() ? '1' : '0'; // Status 0 or 1
+          Map<String, dynamic> locationData = {
+            'userid': userId,
+            'start_lat': startLat.toStringAsFixed(6),
+            'start_lon': startLon.toStringAsFixed(6),
+            'end_lat': endLat.toStringAsFixed(6),
+            'end_lon': endLon.toStringAsFixed(6),
+            'status': status
+          };
 
-        Map<String, dynamic> locationData = {
-          'userid': userId,
-          'start_lat': startLat.toStringAsFixed(6),
-          'start_lon': startLon.toStringAsFixed(6),
-          'end_lat': endLat.toStringAsFixed(6),
-          'end_lon': endLon.toStringAsFixed(6),
-          'status': status
-        };
+          await db.insert('locations', locationData);
 
-        await db.insert('locations', locationData);
-
-        // Print out the inserted data
-        print('Inserted location: $locationData');
-      } catch (e) {
-        // If an error occurs, log the error and continue with the next iteration
-        print('Error inserting location: $e');
-      }
+          // Print out the inserted data
+          print('Inserted location: $locationData');
+        } catch (e) {
+          // If an error occurs, log the error and continue with the next iteration
+          print('Error inserting location: $e');
+        }
       }
     }
-
-
-
-
-
-
   }
 
-
   Future<void> insertRandomUsers(int count) async {
-      final db = await database;
-      final faker = Faker();
+    final db = await database;
+    final faker = Faker();
 
-    int? rowCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM users'));
+    int? rowCount =
+        Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM users'));
 
-    if (rowCount == 0){
-
+    if (rowCount == 0) {
       for (int i = 0; i < count; i++) {
         try {
           // Generate random user data
@@ -189,33 +177,9 @@ class DatabaseHelper {
           // If an error occurs, log the error and continue with the next iteration
           print('Error inserting user: $e');
         }
-            await db.insert('users', {
-      'username': 'epa',
-      'password': 'epa',
-      'email': 'epa@epa.com',
-      'firstName': 'epa',
-      'lastName': 'epa',
-      'licencePlate': 'epa',
-      'carModel': 'epa',
-      'points': 1000,  // Using the default value
-      'image_path': 'epa'
-    });
       }
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   Future<void> deleteTable(String tableName) async {
     final db = await database;
@@ -377,7 +341,20 @@ class DatabaseHelper {
     }
   }
 
-  Future<void> insertFriendRequest(Map<String, dynamic> friendship) async {
+  Future<void> deleteFriend(int userId1, int userId2) async {
+    final db = await database;
+
+    // Delete the friendship from the friends table
+    await db.delete(
+      'friends',
+      where:
+          '(user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
+      whereArgs: [userId1, userId2, userId2, userId1],
+    );
+    print('Friendship Deleted');
+  }
+
+  Future<String> insertFriendRequest(Map<String, dynamic> friendship) async {
     final db = await database;
 
     List<Map<String, dynamic>> friendRequestsSender = await db.query(
@@ -400,10 +377,10 @@ class DatabaseHelper {
 
     if (friendRequestsSenderRejected.isNotEmpty ||
         friendRequestsReceiver.isNotEmpty) {
-      print('Friend Request already exists, not inserted');
+      return ('Friend Request already exists');
     } else if (friendRequestsSender.isEmpty) {
       await db.insert('friend_requests', friendship);
-      print('Friend Request Inserted');
+      return ('Friend Request Sent');
     } else {
       await db.update(
         'friend_requests',
@@ -411,7 +388,7 @@ class DatabaseHelper {
         where: '(sender_id = ? AND receiver_id = ?)',
         whereArgs: [friendship['sender_id'], friendship['receiver_id']],
       );
-      print('Friend Request Updated to Pending');
+      return ('Friend Request Sent');
     }
   }
 
@@ -471,7 +448,6 @@ class DatabaseHelper {
     String endLat,
     String endLon,
     String status,
-    
   ) async {
     final db = await database;
     Map<String, dynamic> row = {
@@ -484,7 +460,6 @@ class DatabaseHelper {
     };
 
     return await db.insert('locations', row);
-    
   }
 
   Future<List<Map<String, dynamic>>> getLocations() async {
@@ -604,13 +579,15 @@ class DatabaseHelper {
     return result;
   }
 
-  Future<List<Map<String, dynamic>>> getLocationsClose(LatLng addressEnd, double rangeInKm) async {
+  Future<List<Map<String, dynamic>>> getLocationsClose(
+      LatLng addressEnd, double rangeInKm) async {
     final db = await database;
 
     double lat = addressEnd.latitude;
     double lon = addressEnd.longitude;
 
-    double rangeInDegreesLat = rangeInKm / 111.0;  // Roughly 111 kilometers per degree of latitude
+    double rangeInDegreesLat =
+        rangeInKm / 111.0; // Roughly 111 kilometers per degree of latitude
 
     // For longitude, the distance varies based on the latitude.
     // double rangeInDegreesLon = rangeInKm / (111.0 * cos(lat * pi / 180));
@@ -625,57 +602,56 @@ class DatabaseHelper {
     String lonLowerStr = lonLower.toString();
     String lonUpperStr = lonUpper.toString();
 
-    List<Map<String, dynamic>> results = await db.query('locations', 
-      where: 'start_lat BETWEEN ? AND ? AND start_lon BETWEEN ? AND ?',
-       whereArgs: [latLowerStr, latUpperStr, lonLowerStr, lonUpperStr]
-    );
+    List<Map<String, dynamic>> results = await db.query('locations',
+        where: 'end_lat BETWEEN ? AND ? AND end_lon BETWEEN ? AND ?',
+        whereArgs: [latLowerStr, latUpperStr, lonLowerStr, lonUpperStr]);
 
     return results;
   }
 
+  Future<List<Map<String, dynamic>>> getCloseUsersWithLocations(
+      LatLng addressEnd, double rangeInKm, int id) async {
+    final db = await database;
 
+    // Calculate the latitude and longitude range
+    double lat = addressEnd.latitude;
+    double lon = addressEnd.longitude;
+    double rangeInDegreesLat = rangeInKm / 111.0;
 
+    double latLower = lat - rangeInDegreesLat;
+    double latUpper = lat + rangeInDegreesLat;
+    double lonLower = lon - rangeInDegreesLat;
+    double lonUpper = lon + rangeInDegreesLat;
 
-  
-  Future<List<Map<String, dynamic>>> getCloseUsersWithLocations(LatLng addressEnd, double rangeInKm) async {
-  final db = await database;
+    String latLowerStr = latLower.toString();
+    String latUpperStr = latUpper.toString();
+    String lonLowerStr = lonLower.toString();
+    String lonUpperStr = lonUpper.toString();
 
-  // Calculate the latitude and longitude range
-  double lat = addressEnd.latitude;
-  double lon = addressEnd.longitude;
-  double rangeInDegreesLat = rangeInKm / 111.0;
-
-  double latLower = lat - rangeInDegreesLat;
-  double latUpper = lat + rangeInDegreesLat;
-  double lonLower = lon - rangeInDegreesLat;
-  double lonUpper = lon + rangeInDegreesLat;
-
-  String latLowerStr = latLower.toString();
-  String latUpperStr = latUpper.toString();
-  String lonLowerStr = lonLower.toString();
-  String lonUpperStr = lonUpper.toString();
-
-  // SQL query to get users with their locations that are close to the given addressEnd
-  String query = '''
-    SELECT 
-      users.*,
-      locations.* 
+    // SQL query to get users with their locations that are close to the given addressEnd
+    String query = '''
+   SELECT 
+        users.username,
+        users.password,
+        users.email,
+        users.firstName,
+        users.lastName,
+        users.licencePlate,
+        users.carModel,
+        users.points,
+        users.image_path,
+        locations.* 
     FROM users
     INNER JOIN locations ON users.id = locations.userid
     WHERE locations.status = '0'
-      AND locations.start_lat BETWEEN ? AND ?
-      AND locations.start_lon BETWEEN ? AND ?
+        AND locations.end_lat BETWEEN ? AND ?
+        AND locations.end_lon BETWEEN ? AND ?
+        AND users.id != ?
   ''';
 
-  List<Map<String, dynamic>> results = await db.rawQuery(query, 
-    [latLowerStr, latUpperStr, lonLowerStr, lonUpperStr]
-  );
+    List<Map<String, dynamic>> results = await db.rawQuery(
+        query, [latLowerStr, latUpperStr, lonLowerStr, lonUpperStr, id]);
 
-  return results;
-}
-
-
-
-
-
+    return results;
+  }
 }
